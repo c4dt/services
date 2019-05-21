@@ -18,3 +18,7 @@ endif
 ifneq ($(wildcard $Dconode),)
 include $(dir $(self))service/conode.mk
 endif
+
+ifneq ($(wildcard $Dwebserver),)
+include $(dir $(self))service/webserver.mk
+endif
