@@ -1,3 +1,9 @@
+# define some useful variables
+#   D		root directory of service
+#   S		service prefix for rules
+#   SERVICE	service name
+#   $SPROTOS	proto packages name
+
 ifeq ($(words $(MAKEFILE_LIST)),1)
 $(error do not run directly, include it into a service)
 endif
@@ -5,11 +11,15 @@ endif
 private self := $(lastword $(MAKEFILE_LIST))
 private parent := $(word $(shell expr $(words $(MAKEFILE_LIST)) - 1),$(MAKEFILE_LIST))
 D := $(dir $(parent))
-ifndef S
-S := $(lastword $(subst /, ,$(abspath $(dir $(parent)))))-
+ifndef SERVICE
+SERVICE := $(lastword $(subst /, ,$(abspath $(dir $(parent)))))
+S := $(SERVICE)-
 endif
 
 .PHONY: $Sall
+
+$Dsrc:
+	git clone https://github.com/c4dt/$(service:service-%=%) $@
 
 ifneq ($(wildcard $Dprotobuf),)
 $SPROTOS := $(patsubst $Dprotobuf/%.proto,%,$(shell find $Dprotobuf -name '*.proto'))
