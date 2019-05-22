@@ -1,7 +1,8 @@
 # define some useful variables
 #   D		root directory of service
 #   S		service prefix for rules
-#   SERVICE	service name
+#   service	service name
+#   SERVICE	service name, upper-case, s/-/_/g
 #   $SPROTOS	proto packages name
 
 ifeq ($(words $(MAKEFILE_LIST)),1)
@@ -11,10 +12,11 @@ endif
 private self := $(lastword $(MAKEFILE_LIST))
 private parent := $(word $(shell expr $(words $(MAKEFILE_LIST)) - 1),$(MAKEFILE_LIST))
 D := $(dir $(parent))
-ifndef SERVICE
-SERVICE := $(lastword $(subst /, ,$(abspath $(dir $(parent)))))
-S := $(SERVICE)-
+ifndef service
+service := $(lastword $(subst /, ,$(abspath $(dir $(parent)))))
 endif
+SERVICE := $(shell echo $(service) | tr -- -[:lower:] _[:upper:])
+S := $(service)-
 
 .PHONY: $Sall
 
