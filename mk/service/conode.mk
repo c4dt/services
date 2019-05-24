@@ -10,6 +10,10 @@ $Sconode-serve: $Sconode-docker-run
 ifneq ($(wildcard $Dprotobuf),)
 $Sconode-build: $Sconode-proto
 
+ifndef GOPATH
+GOPATH := $(shell go env GOPATH)
+endif
+
 $(GOPATH)/bin/protoc-gen-go:
 	go get github.com/golang/protobuf/protoc-gen-go
 
