@@ -42,12 +42,12 @@ $Dconode/cothority_template/conode/conode: $Dconode/*.go | $Dconode/cothority_te
 	cd $(dir $@) && GO111MODULE=on go build -o $(notdir $@)
 $Dconode/cothority_template/conode/conode_data/private.toml: $Dconode/cothority_template/conode/conode
 	( echo localhost:7770; echo; echo $(dir $@); echo; echo ) | $< setup
-$Dconode/cothority_template/conode/exe/conode.Linux.x86_64: $Dconode/cothority_template/conode/main.go
+$Dconode/cothority_template/conode/exe/conode.Linux.x86_64: $Dconode/cothority_template/conode/conode
 	mkdir -p $(dir $@)
-	cd $(dir $@) && GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o $(notdir $@)
+	cd $(dir $@) && GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o $(notdir $@) ..
 .PHONY: $Sconode-docker-build
 $Sconode-docker-build: private dockerfile := conode/cothority_template/conode/Dockerfile-dev
-$Sconode-docker-build: | $Dconode/cothority_template/conode/exe/conode.Linux.x86_64
+$Sconode-docker-build: $Dconode/cothority_template/conode/exe/conode.Linux.x86_64
 	 docker build --tag c4dt/$(service)-conode:latest --file $(dockerfile) $(dir $(dockerfile))
 .PHONY: $Sconode-docker-run
 $Sconode-docker-run: | $Sconode-docker-build $Dconode/cothority_template/conode/conode_data/private.toml
