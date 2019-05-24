@@ -1,7 +1,8 @@
-$Sall: $Sconode
+$Sall: $Sconode-all
+$Sserve: $Sconode-docker-run
 
-.PHONY: $Sconode
-$Sconode: $Sconode-build $Sconode-test
+.PHONY: $Sconode-all
+$Sconode-all: $Sconode-build $Sconode-test
 
 ifneq ($(wildcard $Dprotobuf),)
 $Sconode-build: $Sconode-proto
@@ -38,8 +39,9 @@ $Dconode/cothority_template/conode/exe/conode.Linux.x86_64: $Dconode/cothority_t
 	mkdir -p $(dir $@)
 	cp $^ $@
 .PHONY: $Sconode-docker-build
-$Sconode-docker-build: $Dconode/cothority_template/conode/Dockerfile-dev | $Dconode/cothority_template/conode/exe/conode.Linux.x86_64
-	 docker build --tag c4dt/$(service)-conode:latest --file $< $(dir $<)
+$Sconode-docker-build: private dockerfile := conode/cothority_template/conode/Dockerfile-dev
+$Sconode-docker-build: | $Dconode/cothority_template/conode/exe/conode.Linux.x86_64
+	 docker build --tag c4dt/$(service)-conode:latest --file $(dockerfile) $(dir $(dockerfile))
 .PHONY: $Sconode-docker-run
 $Sconode-docker-run: | $Sconode-docker-build $Dconode/cothority_template/conode/conode_data/private.toml
 	docker run --rm --publish 7770-7771:7770-7771 \

@@ -1,7 +1,8 @@
-$Sall: $Swebserver
+$Sall: $Swebserver-all
+$Sserve: $Swebserver-serve
 
 .PHONY: $Swebserver
-$Swebserver: $Swebserver-build $Swebserver-test
+$Swebserver-all: $Swebserver-build $Swebserver-test
 
 ifneq ($(wildcard $Dprotobuf),)
 $Swebserver-build: $Swebserver-proto
@@ -32,3 +33,7 @@ $Swebserver-build: | $Dwebserver/node_modules
 $Swebserver-test: private PATH := $(PATH):node_modules/@angular/cli/bin
 $Swebserver-test: | $Dwebserver/node_modules
 	cd $Dwebserver && ng test
+
+.PHONY: $Swebserver-serve
+$Swebserver-serve: | $Dwebserver/node_modules
+	cd $Dwebserver && ng serve

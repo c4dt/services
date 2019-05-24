@@ -1,3 +1,6 @@
+# define some targets
+#   all		build and test everything
+#   serve	run server parts
 # define some useful variables
 #   D		root directory of service
 #   S		service prefix for rules
@@ -21,7 +24,7 @@ ifneq ($(words $(MAKEFILE_LIST)),2)
 S := $(service)-
 endif
 
-.PHONY: $Sall
+.PHONY: $Sall $Sserve
 
 $Dsrc:
 	git clone https://github.com/c4dt/$(service:service-%=%) $@
