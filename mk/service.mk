@@ -16,7 +16,10 @@ ifndef service
 service := $(lastword $(subst /, ,$(abspath $(dir $(parent)))))
 endif
 SERVICE := $(shell echo $(service) | tr -- -[:lower:] _[:upper:])
+# if launched by root of service
+ifneq ($(words $(MAKEFILE_LIST)),2)
 S := $(service)-
+endif
 
 .PHONY: $Sall
 
