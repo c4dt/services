@@ -4,6 +4,9 @@ $Sserve: $Sconode-docker-run
 .PHONY: $Sconode-all
 $Sconode-all: $Sconode-build $Sconode-test
 
+.PHONY: $Sconode-serve
+$Sconode-serve: $Sconode-docker-run
+
 ifneq ($(wildcard $Dprotobuf),)
 $Sconode-build: $Sconode-proto
 
