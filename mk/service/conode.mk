@@ -21,8 +21,8 @@ $(GOPATH)/bin/protoc-gen-go:
 define conode-proto =
 $Dconode/proto/$1/$1.pb.go: private PATH := $(PATH):$(GOPATH)/bin
 $Dconode/proto/$1/$1.pb.go: $Dprotobuf/$1.proto | $(GOPATH)/bin/protoc-gen-go
-	mkdir -p $$(dir $$@)
-	cd $Dprotobuf && protoc --go_out=../$$(dir $$@) $$(notdir $$^)
+	mkdir -p $$(@D)
+	cd $Dprotobuf && protoc --go_out=../$$(@D) $$(^F)
 endef
 $(foreach p,$($SPROTOS),$(eval $(call conode-proto,$p)))
 
@@ -39,12 +39,12 @@ $Dconode/cothority_template/conode/main.go: | $Dconode/cothority_template
 	echo package main					> $@
 	echo import _ \"github.com/c4dt/$(service)/conode\"	>> $@
 $Dconode/cothority_template/conode/conode: $Dconode/*.go | $Dconode/cothority_template/conode/main.go
-	cd $(dir $@) && GO111MODULE=on go build -o $(notdir $@)
+	cd $(@D) && GO111MODULE=on go build -o $(@F)
 $Dconode/cothority_template/conode/conode_data/private.toml: $Dconode/cothority_template/conode/conode
-	( echo localhost:7770; echo; echo $(dir $@); echo; echo ) | $< setup
-$Dconode/cothority_template/conode/exe/conode.Linux.x86_64: $Dconode/cothority_template/conode/conode
-	mkdir -p $(dir $@)
-	cd $(dir $@) && GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o $(notdir $@) ..
+	( echo localhost:7770; echo; echo $(@F); echo; echo ) | $< setup
+$Dconode/cothority_template/conode/exe/conode.Linux.x86_64: $Dconode/cothority_template/conode/main.go
+	mkdir -p $(@D)
+	cd $(@D) && GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o $(@F) ..
 .PHONY: $Sconode-docker-build
 $Sconode-docker-build: private dockerfile := conode/cothority_template/conode/Dockerfile-dev
 $Sconode-docker-build: $Dconode/cothority_template/conode/exe/conode.Linux.x86_64
