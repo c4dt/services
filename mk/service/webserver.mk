@@ -35,5 +35,6 @@ $Swebserver-test: | $Dwebserver/node_modules
 	cd $Dwebserver && ng test
 
 .PHONY: $Swebserver-serve
+$Swebserver-serve: private PATH := $(PATH):node_modules/@angular/cli/bin
 $Swebserver-serve: | $Dwebserver/node_modules
 	cd $Dwebserver && ng serve
