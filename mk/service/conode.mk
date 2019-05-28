@@ -41,8 +41,8 @@ $Dconode/cothority_template/conode/main.go: | $Dconode/cothority_template
 $Dconode/cothority_template/conode/conode: $Dconode/*.go | $Dconode/cothority_template/conode/main.go
 	cd $(@D) && GO111MODULE=on go build -o $(@F)
 $Dconode/cothority_template/conode/conode_data/private.toml: $Dconode/cothority_template/conode/conode
-	( echo localhost:7770; echo; echo $(@F); echo; echo ) | $< setup
-$Dconode/cothority_template/conode/exe/conode.Linux.x86_64: $Dconode/cothority_template/conode/main.go
+	( echo localhost:7770; echo; echo $(@D); echo; echo ) | $< setup
+$Dconode/cothority_template/conode/exe/conode.Linux.x86_64: $Dconode/*.go | $Dconode/cothority_template/conode/main.go
 	mkdir -p $(@D)
 	cd $(@D) && GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o $(@F) ..
 .PHONY: $Sconode-docker-build
