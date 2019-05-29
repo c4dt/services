@@ -29,23 +29,26 @@ $(foreach p,$($SPROTOS),$(eval $(call backend-proto,$p)))
 # TODO for now, we can only generate for flat protobuf hierarchy
 .PHONY: $Sbackend-proto
 $Sbackend-proto: $(foreach p,$($SPROTOS),$Dbackend/proto/$p/$p.pb.go)
+$Dbackend/build/conode: $Sbackend-proto
+$Dbackend/build/conode.Linux.x86_64: $Sbackend-proto
 endif
 
 $Dbackend/cothority_template:
 	git clone https://github.com/dedis/cothority_template $@
-	# TODO not very indempotent
-	#echo 'replace github.com/c4dt/$(service)/backend => ../' >> $@/go.mod
-	cp $Dbackend/go.mod $Dbackend/cothority_template/conode
-$Dbackend/cothority_template/conode/main.go: | $Dbackend/cothority_template
-	echo package main					> $@
-	#echo import _ \"github.com/c4dt/$(service)/backend\"	>> $@
-$Dbackend/cothority_template/conode/conode: $Dbackend/*.go | $Dbackend/cothority_template/conode/main.go
-	cd $(@D) && GO111MODULE=on go build -o $(@F)
-$Dbackend/cothority_template/conode/conode_data/private.toml: $Dbackend/cothority_template/conode/conode
-	( echo localhost:7770; echo; echo $(@D); echo; echo ) | $< setup
-$Dbackend/cothority_template/conode/exe/conode.Linux.x86_64: $Dbackend/*.go | $Dbackend/cothority_template/conode/main.go
+$Dbackend/build/conode.go: | $Dbackend/cothority_template
 	mkdir -p $(@D)
-	cd $(@D) && GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o $(@F) ..
+	cp $Dbackend/cothority_template/conode/conode.go $@
+$Dbackend/build/main.go:
+	mkdir -p $(@D)
+	echo package main					> $@
+	echo import _ \"github.com/c4dt/$(service)/backend\"	>> $@
+$Dbackend/build/conode: $Dbackend/build/conode.go $Dbackend/build/main.go $Dbackend/*.go
+	cd $(@D) && GO111MODULE=on go build -o ../build/$(@F)
+$Dbackend/cothority_template/conode/conode_data/private.toml: $Dbackend/build/conode
+	( echo localhost:7770; echo; echo $(@D); echo; echo ) | $< setup
+$Dbackend/build/conode.Linux.x86_64: $Dbackend/build/conode.go $Dbackend/build/main.go $Dbackend/*.go
+	mkdir -p $(@D)
+	cd $(@D) && GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o ../build/$(@F)
 .PHONY: $Sbackend-docker-build
 $Sbackend-docker-build: private dockerfile := backend/cothority_template/conode/Dockerfile-dev
 $Sbackend-docker-build: $Dbackend/cothority_template/conode/exe/conode.Linux.x86_64
