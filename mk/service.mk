@@ -33,8 +33,8 @@ ifneq ($(wildcard $Dprotobuf),)
 $SPROTOS := $(patsubst $Dprotobuf/%.proto,%,$(shell find $Dprotobuf -name '*.proto'))
 endif
 
-ifneq ($(wildcard $Dconode),)
-include $(dir $(self))service/conode.mk
+ifneq ($(wildcard $Dbackend),)
+include $(dir $(self))service/backend.mk
 endif
 
 ifneq ($(wildcard $Dwebserver),)
