@@ -4,12 +4,10 @@ $Sserve: $Swebserver-serve
 .PHONY: $Swebserver
 $Swebserver-all: $Swebserver-build $Swebserver-test
 
-ifneq ($(wildcard $Dprotobuf),)
-$Swebserver-build: $Swebserver-proto
-
 $Dwebserver/node_modules:
 	cd $Dwebserver && npm ci
 
+ifneq ($(wildcard $Dprotobuf),)
 # TODO for now, we can only generate for flat protobuf hierarchy
 $Dwebserver/src/lib/proto.js: private PATH := $(PATH):$Dwebserver/node_modules/protobufjs/bin
 $Dwebserver/src/lib/proto.js: $(foreach p,$($SPROTOS),$Dprotobuf/$p.proto) | $Dwebserver/node_modules
@@ -22,6 +20,7 @@ $Dwebserver/src/lib/proto.d.ts: $Dwebserver/src/lib/proto.js | $Dwebserver/node_
 $Swebserver-proto: $Dwebserver/src/lib/proto.js $Dwebserver/src/lib/proto.d.ts
 $Swebserver-build: $Swebserver-proto
 $Swebserver-test: $Swebserver-proto
+$Swebserver-serve: $Swebserver-proto
 endif
 
 .PHONY: $Swebserver-build
