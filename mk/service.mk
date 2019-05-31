@@ -15,6 +15,9 @@ endif
 private self := $(lastword $(MAKEFILE_LIST))
 private parent := $(word $(shell expr $(words $(MAKEFILE_LIST)) - 1),$(MAKEFILE_LIST))
 D := $(dir $(parent))
+ifeq ($D,./)
+D :=
+endif
 ifndef service
 service := $(lastword $(subst /, ,$(abspath $(dir $(parent)))))
 endif
@@ -28,6 +31,8 @@ endif
 
 $Dsrc:
 	git clone https://github.com/c4dt/$(service:service-%=%) $@
+
+include $(dir $(self))/config.mk
 
 ifneq ($(wildcard $Dprotobuf),)
 $SPROTOS := $(patsubst $Dprotobuf/%.proto,%,$(shell find $Dprotobuf -name '*.proto'))
