@@ -50,14 +50,13 @@ $Dbackend/build/conode.Linux.x86_64: $Dbackend/build/conode.go $Dbackend/build/m
 	mkdir -p $(@D)
 	cd $(@D) && GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o ../build/$(@F)
 .PHONY: $Sbackend-docker-build
-$Sbackend-docker-build: private dockerfile := backend/cothority_template/conode/Dockerfile-dev
-$Sbackend-docker-build: $Dbackend/cothority_template/conode/exe/conode.Linux.x86_64
-	 docker build --tag c4dt/$(service)-backend:latest --file $(dockerfile) $(dir $(dockerfile))
+$Sbackend-docker-build: $Dbackend/Dockerfile $Dbackend/build/conode.Linux.x86_64
+	 docker build --tag c4dt/$(service)-backend:latest --file $< $(<D)
 .PHONY: $Sbackend-docker-run
 $Sbackend-docker-run: | $Sbackend-docker-build $Dbackend/cothority_template/conode/conode_data/private.toml
 	docker run --rm --publish 7770-7771:7770-7771 \
-		--volume $(CURDIR)/$Dbackend/cothority_template/conode/conode_data:/conode_data \
-		c4dt/$(service)-backend:latest
+		--volume $(CURDIR)/$Dbackend/cothority_template/conode/conode_data:/config \
+		c4dt/$(service)-backend:latest -c /config/private.toml server
 
 .PHONY: $Sbackend-build
 $Sbackend-build:
