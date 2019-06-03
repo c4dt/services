@@ -86,17 +86,17 @@ $Swith-conodes = $(subst $($Swith-conodes-newline),;,$($Swith-conodes-sh))
 
 $Dbackend/build/bcadmin: | $Dbackend/cothority $Dbackend/build
 	cd $Dbackend/cothority/byzcoin/bcadmin && GO111MODULE=on go build -o ../../../build/$(@F)
-$Dbackend/build/public.toml: $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/private.toml)
-	cat $(^:private.toml=public.toml) > $@
-$Dbackend/build/bc-vars: $Dbackend/build/bcadmin $Dbackend/public.toml
+$Dbackend/build/conodes.toml: $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/public.toml)
+	cat $^ > $@
+$Dbackend/build/bc-vars: $Dbackend/build/bcadmin $Dbackend/conodes.toml $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/public.toml)
 	$(call $Swith-conodes, ( \
-		$< -c $Dbackend/build create $(lastword $^); \
+		$< -c $Dbackend/build create $(word 2,$^); \
 		$< latest --bc $Dbackend/build/bc-*; \
 		$< key -print $Dbackend/build/key-* ) | \
 		grep -E '^(ByzCoinID|Admin DARC|Private):' > $@)
 
-$Dbackend/build/conode-%/private.toml: private i = $(@D:$Dbackend/build/conode-%=%)
-$Dbackend/build/conode-%/private.toml: $Dbackend/build/conode
+$Dbackend/build/conode-%/public.toml: private i = $(@D:$Dbackend/build/conode-%=%)
+$Dbackend/build/conode-%/public.toml: $Dbackend/build/conode
 	( echo `$($Swith-conodes-network)`:`$(call $Sbackend-port-srv,$i)`; echo conode-$i; echo $(@D); yes ) | $< setup
 
 $Dbackend/build/conode.Linux.x86_64: $Dbackend/build/conode.go $Dbackend/build/main.go $Dbackend/*.go | $Dbackend/build
@@ -113,5 +113,5 @@ $Sbackend-build:
 $Sbackend-test:
 	cd $Dbackend && GO111MODULE=on go test
 
-$Sbackend-serve:
-	$(call with-conodes,sleep inf)
+$Sbackend-serve: $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/public.toml)
+	$(call $Swith-conodes,sleep inf)
