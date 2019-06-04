@@ -1,4 +1,5 @@
 $Sall: $Sbackend-all
+$Sserve: $Sbackend-serve
 
 .PHONY: $Sbackend-all
 $Sbackend-all: $Sbackend-build $Sbackend-test
