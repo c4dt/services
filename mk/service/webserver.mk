@@ -27,7 +27,7 @@ ifneq ($(wildcard $Dbackend),)
 $Dwebserver/src/assets/conodes.toml: $Dbackend/build/conodes.toml
 	cp $^ $@
 
-$Swebserver-serve: $Dwebserver/src/assets/conodes.toml
+$Swebserver-build $Swebserver-test $Swebserver-serve: $Dwebserver/src/assets/conodes.toml
 endif
 
 .PHONY: $Swebserver-build
