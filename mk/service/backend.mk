@@ -89,7 +89,7 @@ $Dbackend/build/bcadmin: | $Dbackend/cothority $Dbackend/build
 	cd $Dbackend/cothority/byzcoin/bcadmin && GO111MODULE=on go build -o ../../../build/$(@F)
 $Dbackend/build/conodes.toml: $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/public.toml)
 	for f in $^; do echo [[servers]]; sed -E 's,^\s*\[(Services[^]]*)\]$$,[servers.\1],' $$f; done > $@
-$Dbackend/build/bc-vars: $Dbackend/build/bcadmin $Dbackend/build/conodes.toml $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/private.toml)
+$Dbackend/build/bc-vars: $Dbackend/build/bcadmin $Dbackend/build/conodes.toml $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/private.toml) | $Sbackend-docker-build
 	$(call $Swith-conodes, ( \
 		$< -c $Dbackend/build create $(word 2,$^); \
 		$< latest --bc $Dbackend/build/bc-*; \
@@ -117,5 +117,5 @@ $Sbackend-build:
 $Sbackend-test:
 	cd $Dbackend && GO111MODULE=on go test
 
-$Sbackend-serve: $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/private.toml)
+$Sbackend-serve: $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/private.toml) | $Sbackend-docker-build
 	$(call $Swith-conodes,sleep inf)
