@@ -52,7 +52,7 @@ define $Swith-conodes-newline =
 
 endef
 define $Swith-conodes-network =
-	[ -z "$$(docker network ls --filter name=$Sbackend)" ] && \
+	[ -z "$$(docker network ls --filter name=$Sbackend | tail -n+2)" ] && \
 		docker network create $Sbackend; \
 	docker network inspect backend | awk -F \" '/"Gateway"/ {print $$4}'
 endef
