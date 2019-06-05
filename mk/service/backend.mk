@@ -7,7 +7,7 @@ $Sbackend-all: $Sbackend-build $Sbackend-test
 .PHONY: $Sbackend-serve
 
 ifneq ($(wildcard $Dprotobuf),)
-$Sbackend-build: $Sbackend-proto
+$Sbackend-build $Sbackend-test: $Sbackend-proto
 
 ifndef GOPATH
 GOPATH := $(shell go env GOPATH)
