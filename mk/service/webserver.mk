@@ -23,6 +23,13 @@ $Swebserver-test: $Swebserver-proto
 $Swebserver-serve: $Swebserver-proto
 endif
 
+ifneq ($(wildcard $Dbackend),)
+$Dwebserver/src/assets/conodes.toml: $Dbackend/build/conodes.toml
+	cp $^ $@
+
+$Swebserver-serve: $Dwebserver/src/assets/conodes.toml
+endif
+
 .PHONY: $Swebserver-build
 $Swebserver-build: private PATH := $(PATH):node_modules/@angular/cli/bin
 $Swebserver-build: | $Dwebserver/node_modules
