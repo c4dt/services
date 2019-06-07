@@ -54,7 +54,7 @@ endef
 define $Swith-conodes-network =
 	[ -z "$$(docker network ls --filter name=$Sbackend | tail -n+2)" ] && \
 		docker network create $Sbackend; \
-	docker network inspect backend | awk -F \" '/"Gateway"/ {print $$4}'
+	docker network inspect $Sbackend | awk -F \" '/"Gateway"/ {print $$4}'
 endef
 define $Swith-conodes-sh =
 	gateway=`$($Swith-conodes-network)`
