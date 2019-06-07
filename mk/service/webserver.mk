@@ -26,8 +26,16 @@ endif
 ifneq ($(wildcard $Dbackend),)
 $Dwebserver/src/assets/conodes.toml: $Dbackend/build/conodes.toml
 	cp $^ $@
+$Dwebserver/src/config.ts: $Dbackend/build/ident
+	awk '	function mkvar(key,value) { \
+			print "export const " key " = Buffer.from(\"" value "\", \"hex\");" \
+		} \
+		/^ByzCoinID:/	{mkvar("ByzCoinID", $$2)} \
+		/^Admin DARC:/	{mkvar("AdminDarc", $$3)} \
+		/^Private:/	{mkvar("Ephemeral", $$2)}' $^ > $@
 
-$Swebserver-build $Swebserver-test $Swebserver-serve: $Dwebserver/src/assets/conodes.toml
+$Swebserver-serve: $Dwebserver/src/assets/conodes.toml
+$Swebserver-build $Swebserver-test $Swebserver-serve: $Dwebserver/src/config.ts
 endif
 
 .PHONY: $Swebserver-build

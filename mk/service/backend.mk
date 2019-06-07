@@ -89,12 +89,6 @@ $Dbackend/build/bcadmin: | $Dbackend/cothority $Dbackend/build
 	cd $Dbackend/cothority/byzcoin/bcadmin && GO111MODULE=on go build -o ../../../build/$(@F)
 $Dbackend/build/conodes.toml: $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/public.toml)
 	for f in $^; do echo [[servers]]; sed -E 's,^\s*\[(Services[^]]*)\]$$,[servers.\1],' $$f; done > $@
-$Dbackend/build/bc-vars: $Dbackend/build/bcadmin $Dbackend/build/conodes.toml $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/private.toml) | $Sbackend-docker-build
-	$(call $Swith-conodes, ( \
-		$< -c $Dbackend/build create $(word 2,$^); \
-		$< latest --bc $Dbackend/build/bc-*; \
-		$< key -print $Dbackend/build/key-* ) | \
-		grep -E '^(ByzCoinID|Admin DARC|Private):' > $@)
 
 $Dbackend/build/conode-%/private.toml: private i = $(@D:$Dbackend/build/conode-%=%)
 $Dbackend/build/conode-%/private.toml: $Dbackend/build/conode
@@ -102,6 +96,10 @@ $Dbackend/build/conode-%/private.toml: $Dbackend/build/conode
 	$< --config $@ setup --non-interactive --host localhost --port `$(call $Sbackend-port-srv,$i)` --description conode-$i
 $Dbackend/build/conode-%/public.toml: $Dbackend/build/conode-%/private.toml
 	grep -E '^\s*((Address|Suite|Public|Description) = .*|\[Services[^]]*\])$$' $^ > $@
+$Dbackend/build/ident: $Dbackend/build/bcadmin $Dbackend/build/conodes.toml $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/private.toml)
+	$(call $Swith-conodes, \
+		$< -c $Dbackend/build create $(word 2,$^); \
+		( $< latest --bc $Dbackend/build/bc-*; $< key -print $Dbackend/build/key-* ) > $@)
 
 $Dbackend/build/conode.Linux.x86_64: $Dbackend/build/conode.go $Dbackend/build/main.go $Dbackend/*.go | $Dbackend/build
 	cd $(@D) && GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o ../build/$(@F)
