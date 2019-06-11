@@ -81,7 +81,7 @@ $Swith-conodes = $(subst $($Swith-conodes-newline),;,$($Swith-conodes-sh))
 $Dbackend/build/bcadmin: | $Dbackend/cothority $Dbackend/build
 	cd $Dbackend/cothority/byzcoin/bcadmin && GO111MODULE=on go build -o ../../../build/$(@F)
 $Dbackend/build/conodes.toml: $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/public.toml)
-	for f in $^; do echo [[servers]]; sed -E 's,^\s*\[(Services[^]]*)\]$$,[servers.\1],' $$f; done > $@
+	for f in $^; do echo [[servers]]; sed -E 's,^[[:space:]]*\[(Services[^]]*)\]$$,[servers.\1],' $$f; done > $@
 
 $Dbackend/build/conode-%/private.toml: private i = $(@D:$Dbackend/build/conode-%=%)
 $Dbackend/build/conode-%/private.toml: $Dbackend/build/conode
