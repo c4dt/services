@@ -18,9 +18,7 @@ $Dwebserver/src/lib/proto.d.ts: $Dwebserver/src/lib/proto.js | $Dwebserver/node_
 
 .PHONY: $Swebserver-proto
 $Swebserver-proto: $Dwebserver/src/lib/proto.js $Dwebserver/src/lib/proto.d.ts
-$Swebserver-build: $Swebserver-proto
-$Swebserver-test: $Swebserver-proto
-$Swebserver-serve: $Swebserver-proto
+$Swebserver-build $Swebserver-test $Swebserver-serve: $Swebserver-proto
 endif
 
 ifneq ($(wildcard $Dbackend),)
@@ -34,8 +32,7 @@ $Dwebserver/src/config.ts: $Dbackend/build/ident
 		/^Admin DARC:/	{mkvar("AdminDarc", $$3)} \
 		/^Private:/	{mkvar("Ephemeral", $$2)}' $^ > $@
 
-$Swebserver-serve: $Dwebserver/src/assets/conodes.toml
-$Swebserver-build $Swebserver-test $Swebserver-serve: $Dwebserver/src/config.ts
+$Swebserver-build $Swebserver-test $Swebserver-serve: $Dwebserver/src/config.ts $Dwebserver/src/assets/conodes.toml
 endif
 
 .PHONY: $Swebserver-build
