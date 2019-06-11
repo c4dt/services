@@ -51,13 +51,7 @@ define $Swith-conodes-newline =
 
 
 endef
-define $Swith-conodes-network =
-	[ -z "$$(docker network ls --filter name=$Sbackend | tail -n+2)" ] && \
-		docker network create $Sbackend; \
-	docker network inspect $Sbackend | awk -F \" '/"Gateway"/ {print $$4}'
-endef
 define $Swith-conodes-sh =
-	gateway=`$($Swith-conodes-network)`
 	nodes='' \
 
 	for i in $(serve_backend_node-ids)
@@ -65,7 +59,6 @@ define $Swith-conodes-sh =
 		port_srv=`$(call $Sbackend-port-srv,$$i)`
 		port_ws=`$(call $Sbackend-port-ws,$$i)`
 		docker run --rm --volume $(CURDIR)/$Dbackend/build/conode-$$i:/config \
-			--network $Sbackend \
 			--publish $$port_srv:$$port_srv --publish $$port_ws:$$port_ws \
 			c4dt/$(service)-backend:latest -c /config/private.toml server & \
 		nodes="$$nodes $$!"
@@ -74,7 +67,7 @@ define $Swith-conodes-sh =
 	for i in $(serve_backend_node-ids)
 	do \
 		port_ws=`$(call $Sbackend-port-ws,$$i)`
-		while ! curl -s $$gateway:$$port_ws; do sleep 0.1; done
+		while ! curl -s localhost:$$port_ws; do sleep 0.1; done
 	done \
 
 	$1 \
