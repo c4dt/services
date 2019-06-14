@@ -109,4 +109,4 @@ $Sbackend-test:
 	cd $Dbackend && GO111MODULE=on go test
 
 $Sbackend-serve: $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/private.toml) | $Sbackend-docker-build
-	$(call $Swith-conodes,sleep inf)
+	$(call $Swith-conodes,sleep 999d)
