@@ -60,6 +60,7 @@ define $Swith-conodes-sh =
 		port_ws=`$(call $Sbackend-port-ws,$$i)`
 		docker run --rm --volume $(CURDIR)/$Dbackend/build/conode-$$i:/config \
 			--publish $$port_srv:$$port_srv --publish $$port_ws:$$port_ws \
+			--name conode-$i \
 			c4dt/$(service)-backend:latest -c /config/private.toml server & \
 		nodes="$$nodes $$!"
 	done \
@@ -86,7 +87,7 @@ $Dbackend/build/conodes.toml: $(foreach i,$(serve_backend_node-ids),$Dbackend/bu
 $Dbackend/build/conode-%/private.toml: private i = $(@D:$Dbackend/build/conode-%=%)
 $Dbackend/build/conode-%/private.toml: $Dbackend/build/conode
 	mkdir -p $(@D)
-	$< --config $@ setup --non-interactive --host localhost --port `$(call $Sbackend-port-srv,$i)` --description conode-$i
+	$< --config $@ setup --non-interactive --host conode-$i --port `$(call $Sbackend-port-srv,$i)` --description conode-$i
 $Dbackend/build/conode-%/public.toml: $Dbackend/build/conode-%/private.toml
 	grep -E '^\s*((Address|Suite|Public|Description) = .*|\[Services[^]]*\])$$' $^ > $@
 $Dbackend/build/ident: $Dbackend/build/bcadmin $Dbackend/build/conodes.toml $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/private.toml)
