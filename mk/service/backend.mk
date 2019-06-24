@@ -100,7 +100,7 @@ $Dbackend/build/conode.Linux.x86_64: $Dbackend/build/conode.go $Dbackend/build/m
 $Sbackend-docker-build: $Dbackend/Dockerfile $Dbackend/build/conode.Linux.x86_64
 	 docker build --tag c4dt/$(service)-backend:latest --file $< $(<D)
 
-.PHONY: $Sbackend-build
+.PHONY: $Sbackend-build $Sbackend-docker-build
 $Sbackend-build:
 	cd $Dbackend && GO111MODULE=on go build
 
