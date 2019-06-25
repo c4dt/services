@@ -89,6 +89,7 @@ $Dbackend/build/conode-%/private.toml: $Dbackend/build/conode
 	$< --config $@ setup --non-interactive --host localhost --port `$(call $Sbackend-port-srv,$i)` --description conode-$i
 $Dbackend/build/conode-%/public.toml: $Dbackend/build/conode-%/private.toml
 	grep -E '^\s*((Address|Suite|Public|Description) = .*|\[Services[^]]*\])$$' $^ > $@
+$Dbackend/build/ident: | $Sbackend-docker-build
 $Dbackend/build/ident: $Dbackend/build/bcadmin $Dbackend/build/conodes.toml $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/private.toml)
 	$(call $Swith-conodes, \
 		$< -c $Dbackend/build create $(word 2,$^); \
