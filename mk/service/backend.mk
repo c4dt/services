@@ -54,13 +54,14 @@ endef
 define $Swith-conodes-sh =
 	nodes=''
 	network=''
-	trap 'echo $$nodes | xargs docker stop' EXIT
+	trap 'echo $$nodes | xargs docker stop' EXIT INT
 	ports=$$(for i in $(serve_backend_node-ids); do p=`$(call $Sbackend-port-ws,$$i)`; echo --publish=$$p:$$p; done) \
 
 	for i in $(serve_backend_node-ids)
 	do \
 		n=$$(docker run --detach --rm --volume $(CURDIR)/$Dbackend/build/conode-$$i:/config \
 			$$ports $$network \
+			--env DEBUG_COLOR=true \
 			c4dt/$(service)-backend:latest -d 4 -c /config/private.toml server)
 		nodes="$$nodes $$n"
 		if [ -z "$$network" ]

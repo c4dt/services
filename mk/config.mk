@@ -1,1 +1,1 @@
-serve_backend_node-ids := $(shell seq 3)
+serve_backend_node-ids := $(shell seq 4)

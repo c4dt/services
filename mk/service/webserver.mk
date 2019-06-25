@@ -43,9 +43,9 @@ $Swebserver-build: | $Dwebserver/node_modules
 .PHONY: $Swebserver-test
 $Swebserver-test: private PATH := $(PATH):node_modules/@angular/cli/bin
 $Swebserver-test: | $Dwebserver/node_modules
-	cd $Dwebserver && ng test
+	cd $Dwebserver && ng test --watch=false
 
 .PHONY: $Swebserver-serve
 $Swebserver-serve: private PATH := $(PATH):node_modules/@angular/cli/bin
 $Swebserver-serve: | $Dwebserver/node_modules
-	cd $Dwebserver && ng serve
+	cd $Dwebserver && ng serve --aot
