@@ -52,16 +52,22 @@ define $Swith-conodes-newline =
 
 endef
 define $Swith-conodes-sh =
-	nodes='' \
+	nodes=''
+	network=''
+	trap 'echo $$nodes | xargs docker stop' EXIT
+	ports=$$(for i in $(serve_backend_node-ids); do p=`$(call $Sbackend-port-ws,$$i)`; echo --publish=$$p:$$p; done) \
 
 	for i in $(serve_backend_node-ids)
 	do \
-		port_srv=`$(call $Sbackend-port-srv,$$i)`
-		port_ws=`$(call $Sbackend-port-ws,$$i)`
-		docker run --rm --volume $(CURDIR)/$Dbackend/build/conode-$$i:/config \
-			--publish $$port_srv:$$port_srv --publish $$port_ws:$$port_ws \
-			c4dt/$(service)-backend:latest -c /config/private.toml server & \
-		nodes="$$nodes $$!"
+		n=$$(docker run --detach --rm --volume $(CURDIR)/$Dbackend/build/conode-$$i:/config \
+			$$ports $$network \
+			c4dt/$(service)-backend:latest -d 4 -c /config/private.toml server)
+		nodes="$$nodes $$n"
+		if [ -z "$$network" ]
+		then \
+			network=--network=container:$$n
+			ports=''
+		fi
 	done \
 
 	for i in $(serve_backend_node-ids)
@@ -70,10 +76,7 @@ define $Swith-conodes-sh =
 		while ! curl -s localhost:$$port_ws; do sleep 0.1; done
 	done \
 
-	$1 \
-
-	kill $$nodes
-	wait $$nodes || :;
+	$1
 endef
 # $1	shell script to wrap
 $Swith-conodes = $(subst $($Swith-conodes-newline),;,$($Swith-conodes-sh))
