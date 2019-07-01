@@ -59,7 +59,9 @@ define $Swith-conodes-sh =
 
 	for i in $(serve_backend_node-ids)
 	do \
-		n=$$(docker run --detach --rm --volume $(CURDIR)/$Dbackend/build/conode-$$i:/config \
+		n=$$(docker run --detach --rm \
+			--env CONODE_SERVICE_PATH=/config \
+			--volume $(CURDIR)/$Dbackend/build/conode-$$i:/config \
 			$$ports $$network \
 			--env DEBUG_COLOR=true \
 			c4dt/$(service)-backend:latest -d 4 -c /config/private.toml server)
