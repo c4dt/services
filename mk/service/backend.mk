@@ -35,6 +35,8 @@ endif
 
 $Dbackend/build:
 	mkdir $@
+$Dbackend/build/.dockerignore:
+	( for i in $(serve_backend_node-ids); do echo /conode-$$i; done ) > $@
 $Dbackend/cothority:
 	git clone https://github.com/c4dt/cothority $@
 $Dbackend/build/conode.go: | $Dbackend/cothority $Dbackend/build
@@ -104,7 +106,7 @@ $Dbackend/build/ident: $Dbackend/build/bcadmin $Dbackend/build/conodes.toml $(fo
 $Dbackend/build/conode.Linux.x86_64: $Dbackend/build/conode.go $Dbackend/build/main.go $Dbackend/*.go | $Dbackend/build
 	cd $(@D) && GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o ../build/$(@F)
 .PHONY: $Sbackend-docker-build
-$Sbackend-docker-build: $Dbackend/Dockerfile $Dbackend/build/conode.Linux.x86_64
+$Sbackend-docker-build: $Dbackend/Dockerfile $Dbackend/build/conode.Linux.x86_64 $Dbackend/build/.dockerignore
 	 docker build --tag c4dt/$(service)-backend:latest --file $< $(<D)
 
 .PHONY: $Sbackend-build $Sbackend-docker-build
