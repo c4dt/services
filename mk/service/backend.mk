@@ -62,9 +62,10 @@ define $Swith-conodes-sh =
 		n=$$(docker run --detach --rm \
 			--env CONODE_SERVICE_PATH=/config \
 			--volume $(CURDIR)/$Dbackend/build/conode-$$i:/config \
+			--user `id -u`:`id -g` \
 			$$ports $$network \
 			--env DEBUG_COLOR=true \
-			c4dt/$(service)-backend:latest -d 4 -c /config/private.toml server)
+			c4dt/$(service)-backend:latest -d 2 -c /config/private.toml server)
 		nodes="$$nodes $$n"
 		if [ -z "$$network" ]
 		then \
