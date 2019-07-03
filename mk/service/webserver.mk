@@ -22,7 +22,7 @@ $Swebserver-build $Swebserver-test $Swebserver-serve: $Swebserver-proto
 endif
 
 ifneq ($(wildcard $Dbackend),)
-$Dwebserver/src/assets/conodes.toml: $Dbackend/build/conodes.toml
+$Dwebserver/src/assets/$(toml_filename): $Dbackend/build/conodes.toml
 	cp $^ $@
 $Dwebserver/src/config.ts: $Dbackend/build/ident
 	awk '	function mkvar(key,value) { \
@@ -32,7 +32,7 @@ $Dwebserver/src/config.ts: $Dbackend/build/ident
 		/^Admin DARC:/	{mkvar("AdminDarc", $$3)} \
 		/^Private:/	{mkvar("Ephemeral", $$2)}' $^ > $@
 
-$Swebserver-build $Swebserver-test $Swebserver-serve: $Dwebserver/src/config.ts $Dwebserver/src/assets/conodes.toml
+$Swebserver-build $Swebserver-test $Swebserver-serve: $Dwebserver/src/config.ts $Dwebserver/src/assets/$(toml_filename)
 endif
 
 .PHONY: $Swebserver-build
