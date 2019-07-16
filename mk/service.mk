@@ -42,6 +42,6 @@ ifneq ($(wildcard $Dbackend),)
 include $(dir $(self))service/backend.mk
 endif
 
-ifneq ($(wildcard $Dwebserver),)
-include $(dir $(self))service/webserver.mk
+ifneq ($(wildcard $Dwebapp),)
+include $(dir $(self))service/webapp.mk
 endif
