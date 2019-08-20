@@ -65,6 +65,7 @@ define $Swith-conodes-sh =
 			--user `id -u`:`id -g` \
 			$$ports $$network \
 			--env DEBUG_COLOR=true \
+			--name "conode-$$i" \
 			c4dt/$(service)-backend:latest -d 2 -c /config/private.toml server)
 		nodes="$$nodes $$n"
 		if [ -z "$$network" ]
