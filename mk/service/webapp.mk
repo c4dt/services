@@ -24,15 +24,14 @@ endif
 ifneq ($(wildcard $Dbackend),)
 $Dwebapp/src/assets/$(toml_filename): $Dbackend/build/conodes.toml
 	cp $^ $@
-$Dwebapp/src/config.ts: $Dbackend/build/ident
-	awk '	function mkvar(key,value) { \
-			print "export const " key " = Buffer.from(\"" value "\", \"hex\");" \
-		} \
-		/^ByzCoinID:/	{mkvar("ByzCoinID", $$2)} \
-		/^Admin DARC:/	{mkvar("AdminDarc", $$3)} \
-		/^Private:/	{mkvar("Ephemeral", $$2)}' $^ > $@
+$Dwebapp/src/assets/config.toml: $Dbackend/build/ident
+	awk '\
+		/^ByzCoinID:/	{printf("ByzCoinID = \"%s\"\n", $$2)} \
+		/^Admin DARC:/	{printf("AdminDarc = \"%s\"\n", $$3)} \
+		/^Private:/		{printf("Ephemeral = \"%s\"\n", $$2)} \
+		' $^ > $@
 
-$Swebapp-build $Swebapp-test $Swebapp-serve: $Dwebapp/src/config.ts $Dwebapp/src/assets/$(toml_filename)
+$Swebapp-build $Swebapp-test $Swebapp-serve: $Dwebapp/src/assets/config.toml $Dwebapp/src/assets/$(toml_filename)
 endif
 
 .PHONY: $Swebapp-build
