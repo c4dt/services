@@ -54,7 +54,7 @@ endef
 define $Swith-conodes-sh =
 	nodes=''
 	network=''
-	trap 'echo $$nodes | xargs docker stop' EXIT INT
+	if [ -z "$2" ]; then trap 'echo $$nodes | xargs docker stop' EXIT INT; fi
 	ports=$$(for i in $(serve_backend_node-ids); do p=`$(call $Sbackend-port-ws,$$i)`; echo --publish=$$p:$$p; done) \
 
 	for i in $(serve_backend_node-ids)
@@ -119,3 +119,6 @@ $Sbackend-test:
 
 $Sbackend-serve: $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/private.toml) | $Sbackend-docker-build
 	$(call $Swith-conodes,sleep 999d)
+
+$Sbackend-serve-test: $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/private.toml) | $Sbackend-docker-build
+	$(call $Swith-conodes,echo "ready", NOTRAP)
