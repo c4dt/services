@@ -1,7 +1,7 @@
 $Sall: $Swebapp-all
 $Sserve: $Swebapp-serve
 
-.PHONY: $Swebapp
+.PHONY: $Swebapp-all
 $Swebapp-all: $Swebapp-build $Swebapp-test
 
 $Dwebapp/node_modules:
