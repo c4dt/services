@@ -21,7 +21,7 @@ define $Sbackend-proto =
 $Dbackend/proto/$1/$1.pb.go: private PATH := $(PATH):$(GOPATH)/bin
 $Dbackend/proto/$1/$1.pb.go: $Dprotobuf/$1.proto | $(GOPATH)/bin/protoc-gen-go
 	mkdir -p $$(@D)
-	cd $Dprotobuf && protoc --go_out=../$$(@D) $$(^F)
+	cd $Dprotobuf && protoc --go_out=../$$(@D) --go_opt=paths=source_relative $$(^F)
 endef
 $(foreach p,$($SPROTOS),$(eval $(call $Sbackend-proto,$p)))
 
