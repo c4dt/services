@@ -90,7 +90,7 @@ $Dbackend/build/bcadmin: | $Dbackend/cothority $Dbackend/build
 $Dbackend/build/conodes.toml: $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/public.toml)
 	for f in $^; do echo [[servers]]; sed -E 's,^[[:space:]]*\[(Services[^]]*)\]$$,[servers.\1],' $$f; done > $@
 
-$Dbackend/build/conode-%/private.toml: private i = $(@D:$Dbackend/build/conode-%=%)
+$Dbackend/build/conode-%/private.toml: i = $(@D:$Dbackend/build/conode-%=%)
 $Dbackend/build/conode-%/private.toml: $Dbackend/build/conode
 	mkdir -p $(@D)
 	$< --config $@ setup --non-interactive --host localhost --port `$(call $Sbackend-port-srv,$i)` --description conode-$i

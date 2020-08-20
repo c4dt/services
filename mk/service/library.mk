@@ -13,10 +13,9 @@ $Dprotobuf:; mkdir $@
 $Dprotobuf/src.proto: $Dcothority/proto.awk | $Dsrc $Dprotobuf
 	awk -f $< $Dsrc/lib/proto.go > $@
 
-$Dlibrary/src/proto.json: private PATH := $(PATH):$Dlibrary/node_modules/protobufjs/bin
 $Dlibrary/src/proto.json: | $Dlibrary/node_modules
 $Dlibrary/src/proto.json: $Dprotobuf/src.proto $(foreach p,$(cothority_protos),$Dcothority/external/proto/$p.proto)
-	pbjs -t json -o $@ $^
+	PATH=$(PATH):$Dlibrary/node_modules/protobufjs/bin pbjs -t json -o $@ $^
 
 .PHONY: $Slibrary-proto
 $Slibrary-proto: $Dlibrary/src/proto.json

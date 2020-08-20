@@ -12,8 +12,8 @@ ifeq ($(words $(MAKEFILE_LIST)),1)
 $(error do not run directly, include it into a service)
 endif
 
-private self := $(lastword $(MAKEFILE_LIST))
-private parent := $(word $(shell expr $(words $(MAKEFILE_LIST)) - 1),$(MAKEFILE_LIST))
+self := $(lastword $(MAKEFILE_LIST))
+parent := $(word $(shell expr $(words $(MAKEFILE_LIST)) - 1),$(MAKEFILE_LIST))
 D := $(dir $(parent))
 ifeq ($D,./)
 D :=

@@ -36,16 +36,13 @@ $Swebapp-build $Swebapp-test $Swebapp-serve: $Dwebapp/src/config.ts $Dwebapp/src
 endif
 
 .PHONY: $Swebapp-build
-$Swebapp-build: private PATH := $(PATH):node_modules/@angular/cli/bin
 $Swebapp-build: | $Dwebapp/node_modules
-	cd $Dwebapp && ng build --prod
+	cd $Dwebapp && npx ng build --prod
 
 .PHONY: $Swebapp-test
-$Swebapp-test: private PATH := $(PATH):node_modules/@angular/cli/bin
 $Swebapp-test: | $Dwebapp/node_modules
-	cd $Dwebapp && ng test --watch=false
+	cd $Dwebapp && npx ng test --watch=false
 
 .PHONY: $Swebapp-serve
-$Swebapp-serve: private PATH := $(PATH):node_modules/@angular/cli/bin
 $Swebapp-serve: | $Dwebapp/node_modules
-	cd $Dwebapp && ng serve --aot
+	cd $Dwebapp && npx ng serve --aot
