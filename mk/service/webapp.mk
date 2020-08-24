@@ -2,7 +2,7 @@ $Sall: $Swebapp-all
 $Sserve: $Swebapp-serve
 
 .PHONY: $Swebapp-all
-$Swebapp-all: $Swebapp-build $Swebapp-test
+$Swebapp-all: $Swebapp-build
 
 $Dwebapp/node_modules:
 	cd $Dwebapp && npm ci
@@ -18,7 +18,7 @@ $Dwebapp/src/lib/proto.d.ts: $Dwebapp/src/lib/proto.js | $Dwebapp/node_modules
 
 .PHONY: $Swebapp-proto
 $Swebapp-proto: $Dwebapp/src/lib/proto.js $Dwebapp/src/lib/proto.d.ts
-$Swebapp-build $Swebapp-test $Swebapp-serve: $Swebapp-proto
+$Swebapp-build $Swebapp-serve: $Swebapp-proto
 endif
 
 ifneq ($(wildcard $Dbackend),)
@@ -32,16 +32,28 @@ $Dwebapp/src/config.ts: $Dbackend/build/ident
 		/^Admin DARC:/	{mkvar("AdminDarc", $$3)} \
 		/^Private:/	{mkvar("Ephemeral", $$2)}' $^ > $@
 
-$Swebapp-build $Swebapp-test $Swebapp-serve: $Dwebapp/src/config.ts $Dwebapp/src/assets/$(toml_filename)
+$Swebapp-build $Swebapp-serve: $Dwebapp/src/config.ts $Dwebapp/src/assets/$(toml_filename)
 endif
 
 .PHONY: $Swebapp-build
 $Swebapp-build: | $Dwebapp/node_modules
 	cd $Dwebapp && npx ng build --prod
 
+ifneq ($(shell find webapp -name '*.spec.ts'),)
 .PHONY: $Swebapp-test
 $Swebapp-test: | $Dwebapp/node_modules
 	cd $Dwebapp && npx ng test --watch=false
+
+ifneq ($(wildcard $Dprotobuf),)
+$Swebapp-test: $Swebapp-proto
+endif
+
+ifneq ($(wildcard $Dbackend),)
+$Swebapp-test: $Dwebapp/src/config.ts $Dwebapp/src/assets/$(toml_filename)
+endif
+
+$Swebapp-all: $Swebapp-test
+endif
 
 .PHONY: $Swebapp-serve
 $Swebapp-serve: | $Dwebapp/node_modules
