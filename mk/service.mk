@@ -6,7 +6,6 @@
 #   S		service prefix for rules
 #   service	service name
 #   SERVICE	service name, upper-case, s/-/_/g
-#   $SPROTOS	proto packages name
 
 ifeq ($(words $(MAKEFILE_LIST)),1)
 $(error do not run directly, include it into a service)
@@ -35,7 +34,7 @@ $Dsrc:
 include $(dir $(self))/config.mk
 
 ifneq ($(wildcard $Dprotobuf),)
-$SPROTOS := $(patsubst $Dprotobuf/%.proto,%,$(shell find $Dprotobuf -name '*.proto'))
+include $(dir $(self))service/protobuf.mk
 endif
 
 ifneq ($(wildcard $Dbackend),)

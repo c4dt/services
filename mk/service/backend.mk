@@ -6,33 +6,6 @@ $Sbackend-all: $Sbackend-build $Sbackend-test
 
 .PHONY: $Sbackend-serve
 
-ifneq ($(wildcard $Dprotobuf),)
-$Sbackend-build $Sbackend-test: $Sbackend-proto
-
-ifndef GOPATH
-GOPATH := $(shell go env GOPATH)
-endif
-
-$(GOPATH)/bin/protoc-gen-go:
-	go get github.com/golang/protobuf/protoc-gen-go
-
-# $1	proto pkg
-define $Sbackend-proto =
-$Dbackend/proto/$1/$1.pb.go: private PATH := $(PATH):$(GOPATH)/bin
-$Dbackend/proto/$1/$1.pb.go: $Dprotobuf/$1.proto | $(GOPATH)/bin/protoc-gen-go
-	mkdir -p $$(@D)
-	cd $Dprotobuf && protoc --go_out=../$$(@D) $$(^F)
-endef
-$(foreach p,$($SPROTOS),$(eval $(call $Sbackend-proto,$p)))
-
-# TODO for now, we can only generate for flat protobuf hierarchy
-.PHONY: $Sbackend-proto
-private $Sbackend-proto-deps := $(foreach p,$($SPROTOS),$Dbackend/proto/$p/$p.pb.go)
-$Sbackend-proto: $($Sbackend-proto-deps)
-$Dbackend/build/conode: $($Sbackend-proto-deps)
-$Dbackend/build/conode.Linux.x86_64: $($Sbackend-proto-deps)
-endif
-
 $Dbackend/build:
 	mkdir $@
 $Dbackend/cothority:
