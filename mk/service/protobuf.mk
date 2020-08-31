@@ -11,6 +11,13 @@ $Dprotobuf/node_modules/.bin/pbts: | $Dprotobuf/node_modules/protobufjs/.install
 
 $Dprotobuf/proto.json: PATH := $(PATH):$Dprotobuf/node_modules/.bin
 $Dprotobuf/proto.json: | $Dprotobuf/node_modules/.bin/pbjs
+	echo $(PATH)
+	type pbjs
+	ls $Dprotobuf/node_modules/.bin
+	file $Dprotobuf/node_modules/.bin/pbjs
+	$(SHELL) -ec 'echo $$PATH'
+	$(SHELL) -ec 'type pbjs'
+	pbjs
 	pbjs -t json -o $@ $^
 $Dprotobuf/proto.js: PATH := $(PATH):$Dprotobuf/node_modules/.bin
 $Dprotobuf/proto.js: | $Dprotobuf/node_modules/.bin/pbjs
