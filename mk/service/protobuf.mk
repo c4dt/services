@@ -17,7 +17,7 @@ $Dprotobuf/proto.json: | $Dprotobuf/node_modules/.bin/pbjs
 	file $Dprotobuf/node_modules/.bin/pbjs
 	$(SHELL) -ec 'echo $$PATH'
 	$(SHELL) -ec 'type pbjs'
-	pbjs
+	$Dprotobuf/node_modules/.bin/pbjs
 	pbjs -t json -o $@ $^
 $Dprotobuf/proto.js: PATH := $(PATH):$Dprotobuf/node_modules/.bin
 $Dprotobuf/proto.js: | $Dprotobuf/node_modules/.bin/pbjs
