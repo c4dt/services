@@ -23,12 +23,12 @@ endif
 
 .PHONY: $Swebapp-build
 $Swebapp-build: | $Dwebapp/node_modules
-	cd $Dwebapp && npx ng build --prod
+	cd $Dwebapp && npm run build -- --prod
 
 ifneq ($(shell find webapp -name '*.spec.ts'),)
 .PHONY: $Swebapp-test
 $Swebapp-test: | $Dwebapp/node_modules
-	cd $Dwebapp && npx ng test --watch=false
+	cd $Dwebapp && npm run test -- --watch=false
 
 ifneq ($(wildcard $Dbackend),)
 $Swebapp-test: $Dwebapp/src/config.ts $Dwebapp/src/assets/$(toml_filename)
@@ -39,4 +39,4 @@ endif
 
 .PHONY: $Swebapp-serve
 $Swebapp-serve: | $Dwebapp/node_modules
-	cd $Dwebapp && npx ng serve --aot
+	cd $Dwebapp && npm start -- --aot
