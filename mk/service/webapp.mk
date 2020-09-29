@@ -4,8 +4,9 @@ $Sserve: $Swebapp-serve
 .PHONY: $Swebapp-all
 $Swebapp-all: $Swebapp-build
 
-$Dwebapp/node_modules:
+$Dwebapp/node_modules/.installed:
 	cd $Dwebapp && npm ci
+	touch $@
 
 ifneq ($(wildcard $Dbackend),)
 $Dwebapp/src/assets/$(toml_filename): $Dbackend/build/conodes.toml
@@ -22,13 +23,13 @@ $Swebapp-build $Swebapp-serve: $Dwebapp/src/config.ts $Dwebapp/src/assets/$(toml
 endif
 
 .PHONY: $Swebapp-build
-$Swebapp-build: | $Dwebapp/node_modules
-	cd $Dwebapp && npm run build -- --prod
+$Swebapp-build: | $Dwebapp/node_modules/.installed
+	cd $Dwebapp && npx ng build --prod
 
 ifneq ($(shell find webapp -name '*.spec.ts'),)
 .PHONY: $Swebapp-test
-$Swebapp-test: | $Dwebapp/node_modules
-	cd $Dwebapp && npm run test -- --watch=false
+$Swebapp-test: | $Dwebapp/node_modules/.installed
+	cd $Dwebapp && npx ng test --watch=false
 
 ifneq ($(wildcard $Dbackend),)
 $Swebapp-test: $Dwebapp/src/config.ts $Dwebapp/src/assets/$(toml_filename)
@@ -38,5 +39,5 @@ $Swebapp-all: $Swebapp-test
 endif
 
 .PHONY: $Swebapp-serve
-$Swebapp-serve: | $Dwebapp/node_modules
-	cd $Dwebapp && npm start -- --aot
+$Swebapp-serve: | $Dwebapp/node_modules/.installed
+	cd $Dwebapp && npx ng serve --aot
