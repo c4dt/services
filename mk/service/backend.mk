@@ -36,7 +36,7 @@ endif
 $Dbackend/build:
 	mkdir $@
 $Dbackend/cothority:
-	git clone https://github.com/dedis/cothority.git -b v3.4.3 $@
+	git clone https://github.com/dedis/cothority.git --depth 1 $@
 $Dbackend/build/conode.go: | $Dbackend/cothority $Dbackend/build
 	cp $Dbackend/cothority/conode/conode.go $@
 $Dbackend/build/main.go: | $Dbackend/build
