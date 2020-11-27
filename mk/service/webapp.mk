@@ -37,7 +37,7 @@ endif
 .PHONY: $Swebapp-build
 $Swebapp-build: private PATH := $(PATH):node_modules/@angular/cli/bin
 $Swebapp-build: | $Dwebapp/node_modules
-	cd $Dwebapp && ng build $(webapp_build_options)
+	cd $Dwebapp && node --max_old_space_size=8000 ./node_modules/@angular/cli/bin/ng build $(webapp_build_options)
 
 .PHONY: $Swebapp-test
 $Swebapp-test: private PATH := $(PATH):node_modules/@angular/cli/bin
