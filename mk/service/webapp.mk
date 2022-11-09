@@ -24,7 +24,7 @@ endif
 
 .PHONY: $Swebapp-build
 $Swebapp-build: | $Dwebapp/node_modules/.installed
-	cd $Dwebapp && ./node_modules/.bin/ng build --prod
+	cd $Dwebapp && ./node_modules/.bin/ng build --configuration production
 
 ifneq ($(shell find webapp -name '*.spec.ts'),)
 .PHONY: $Swebapp-test
