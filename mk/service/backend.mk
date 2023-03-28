@@ -14,7 +14,7 @@ GOPATH := $(shell go env GOPATH)
 endif
 
 $(GOPATH)/bin/protoc-gen-go:
-	go get github.com/golang/protobuf/protoc-gen-go
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 
 # $1	proto pkg
 define $Sbackend-proto =
@@ -42,7 +42,11 @@ $Dbackend/build/conode.go: | $Dbackend/cothority $Dbackend/build
 $Dbackend/build/main.go: | $Dbackend/build
 	echo package main					> $@
 	echo import _ \"github.com/c4dt/$(service)/backend\"	>> $@
-$Dbackend/build/conode: $Dbackend/build/conode.go $Dbackend/build/main.go $Dbackend/*.go
+$Dbackend/build/go.mod: | $Sbackend-proto $Dbackend/build/main.go $Dbackend/build
+	cd $Dbackend/build && go mod init github.com/dedis/cothority
+	echo 'replace github.com/c4dt/service-stainless/backend => ../../backend' >> $@
+	cd $Dbackend/build && go mod tidy
+$Dbackend/build/conode: $Dbackend/build/conode.go $Dbackend/build/main.go $Dbackend/build/go.mod $Dbackend/*.go
 	cd $(@D) && GO111MODULE=on go build -o ../build/$(@F)
 
 $Sbackend-port-srv = expr 7770 + $1 '*' 2
