@@ -22,16 +22,18 @@ $Swebapp-build $Swebapp-test $Swebapp-serve: $Swebapp-proto
 endif
 
 ifneq ($(wildcard $Dbackend),)
-$Dwebapp/src/assets/$(toml_filename): $Dbackend/build/conodes.toml
+$Dwebapp/src/assets/configs/$(toml_filename): $Dbackend/build/conodes.toml
 	cp $^ $@
-$Dwebapp/src/assets/config.toml: $Dbackend/build/ident
+$Dwebapp/src/assets/configs/:
+	mkdir $@
+$Dwebapp/src/assets/configs/byzcoin.toml: $Dbackend/build/ident | $Dwebapp/src/assets/configs/
 	awk '\
 		/^ByzCoinID:/	{printf("ByzCoinID = \"%s\"\n", $$2)} \
 		/^Admin DARC:/	{printf("AdminDarc = \"%s\"\n", $$3)} \
 		/^Private:/		{printf("Ephemeral = \"%s\"\n", $$2)} \
 		' $^ > $@
 
-$Swebapp-build $Swebapp-test $Swebapp-serve: $Dwebapp/src/assets/config.toml $Dwebapp/src/assets/$(toml_filename)
+$Swebapp-build $Swebapp-test $Swebapp-serve: $Dwebapp/src/assets/configs/byzcoin.toml $Dwebapp/src/assets/configs/$(toml_filename)
 endif
 
 .PHONY: $Swebapp-build
