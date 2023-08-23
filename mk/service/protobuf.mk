@@ -6,11 +6,11 @@ $Sall: $Sprotobuf-all
 $Sprotobuf-build: $Dprotobuf/proto.json
 
 $Dprotobuf/proto.json:
-	npx -p protobufjs@$(PROTOBUF_VERSION) pbjs -t json -o $@ $^
+	npm i -g protobufjs@$(PROTOBUF_VERSION) && pbjs -t json -o $@ $^
 $Dprotobuf/proto.js:
-	npx -p protobufjs@$(PROTOBUF_VERSION) pbjs -t static-module -o $@ $^
+	npm i -g protobufjs@$(PROTOBUF_VERSION) && pbjs -t static-module -o $@ $^
 $Dprotobuf/proto.d.ts: $Dprotobuf/proto.js
-	npx -p protobufjs@$(PROTOBUF_VERSION) pbts -o $@ $^
+	npm i -g protobufjs@$(PROTOBUF_VERSION) && pbts -o $@ $^
 
 .PHONY: $Sprotobuf-all
 $Sprotobuf-all: $Sprotobuf-build
