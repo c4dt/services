@@ -106,6 +106,7 @@ $Dbackend/configs/conode-%/private.toml: $Dbackend/build/conode
 	$< --config $@ setup --non-interactive --host $(TESTNET_NET).$$(( $i + 1 )) --port `$(call $Sbackend-port-srv,$i)` --description conode-$i
 $Dbackend/configs/conode-%/public.toml: $Dbackend/configs/conode-%/private.toml
 	grep -E '^\s*((Address|Suite|Public|Description) = .*|\[Services[^]]*\])$$' $^ > $@
+	echo "URL = \"http://localhost:$$(( $$(grep Address $@ | sed -e 's/.*:\(.*\)./\1/') + 1 ))\"\n$$( cat $@ )" > $@
 $Dbackend/configs/ident: | $Sbackend-docker-build
 $Dbackend/configs/ident: $Dbackend/build/bcadmin $Dbackend/configs/conodes.toml $(foreach i,$(serve_backend_node-ids),$Dbackend/configs/conode-$i/private.toml)
 	$(call $Swith-conodes, \
