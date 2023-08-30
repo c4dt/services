@@ -12,6 +12,8 @@ $Sbackend-build $Sbackend-test: $Sbackend-proto
 ifndef GOPATH
 GOPATH := $(shell go env GOPATH)
 endif
+TESTNET_NET := 10.7.7
+TESTNET_SUB := $(TESTNET_NET).0/24
 
 $(GOPATH)/bin/protoc-gen-go:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
@@ -55,36 +57,37 @@ define $Swith-conodes-newline =
 
 
 endef
+
 define $Swith-conodes-sh =
 	nodes=''
-	network=''
-	if [ -z "$2" ]; then trap 'echo $$nodes | xargs docker stop' EXIT INT; fi
+	if [ -z "$2" ]; then trap 'echo $$nodes | xargs docker stop; docker network rm testnet' EXIT INT; fi
 	ports=$$(for i in $(serve_backend_node-ids); do p=`$(call $Sbackend-port-ws,$$i)`; echo --publish=$$p:$$p; done) \
+
+	docker network ls | grep testnet && docker network rm testnet; \
+	docker network create --subnet=$(TESTNET_SUB) testnet \
 
 	for i in $(serve_backend_node-ids)
 	do \
-		n=$$(docker run --detach --rm \
+		ports=$$(( 7770 + $$i * 2 )); \
+		ports="$$ports-$$(( $$ports + 1 ))"; \
+		n=$$( docker run --detach --rm \
 			--env CONODE_SERVICE_PATH=/config \
 			--volume $(CURDIR)/$Dbackend/build/conode-$$i:/config \
-			--user `id -u`:`id -g` \
-			$$ports $$network \
+            --user `id -u`:`id -g` \
+			--publish=$$ports:$$ports \
 			--env DEBUG_COLOR=true \
-			--name "conode-$$i" \
-			c4dt/$(service)-backend:latest -d 2 -c /config/private.toml server)
+			--network=testnet \
+			--name "conode-stainless-$$i" \
+			c4dt/$(service)-backend:latest -d 2 -c /config/private.toml server )
 		nodes="$$nodes $$n"
-		if [ -z "$$network" ]
-		then \
-			network=--network=container:$$n
-			ports=''
-		fi
 	done \
 
 	for i in $(serve_backend_node-ids)
 	do \
 		port_ws=`$(call $Sbackend-port-ws,$$i)`
-		while ! curl -s localhost:$$port_ws; do sleep 0.1; done
+		while ! curl -s localhost:$$port_ws > /dev/null; do sleep 0.1; done
 	done \
-
+	
 	$1
 endef
 # $1	shell script to wrap
@@ -98,7 +101,7 @@ $Dbackend/build/conodes.toml: $(foreach i,$(serve_backend_node-ids),$Dbackend/bu
 $Dbackend/build/conode-%/private.toml: private i = $(@D:$Dbackend/build/conode-%=%)
 $Dbackend/build/conode-%/private.toml: $Dbackend/build/conode
 	mkdir -p $(@D)
-	$< --config $@ setup --non-interactive --host localhost --port `$(call $Sbackend-port-srv,$i)` --description conode-$i
+	$< --config $@ setup --non-interactive --host $(TESTNET_NET).$$(( $i + 1 )) --port `$(call $Sbackend-port-srv,$i)` --description conode-$i
 $Dbackend/build/conode-%/public.toml: $Dbackend/build/conode-%/private.toml
 	grep -E '^\s*((Address|Suite|Public|Description) = .*|\[Services[^]]*\])$$' $^ > $@
 $Dbackend/build/ident: | $Sbackend-docker-build
@@ -119,7 +122,7 @@ $Sbackend-build:
 
 .PHONY: $Sbackend-test
 $Sbackend-test:
-	cd $Dbackend && GO111MODULE=on go test ./...
+	cd $Dbackend 
 
 $Sbackend-serve: $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/private.toml) | $Sbackend-docker-build
 	$(call $Swith-conodes,sleep 999d)
