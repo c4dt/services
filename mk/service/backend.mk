@@ -12,8 +12,6 @@ $Sbackend-build $Sbackend-test: $Sbackend-proto
 ifndef GOPATH
 GOPATH := $(shell go env GOPATH)
 endif
-TESTNET_NET := 10.7.7
-TESTNET_SUB := $(TESTNET_NET).0/24
 
 $(GOPATH)/bin/protoc-gen-go:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
@@ -62,25 +60,24 @@ endef
 
 define $Swith-conodes-sh =
 	nodes=''
-	if [ -z "$2" ]; then trap 'echo $$nodes | xargs docker stop; docker network rm testnet' EXIT INT; fi
+	if [ -z "$2" ]; then trap 'echo $$nodes | xargs docker stop' EXIT INT; fi
 	ports=$$(for i in $(serve_backend_node-ids); do p=`$(call $Sbackend-port-ws,$$i)`; echo --publish=$$p:$$p; done) \
 
-	docker network ls | grep testnet && docker network rm testnet; \
-	docker network create --subnet=$(TESTNET_SUB) testnet \
-
+	network=""
 	for i in $(serve_backend_node-ids)
 	do \
-		ports=$$(( 7770 + $$i * 2 )); \
-		ports="$$ports-$$(( $$ports + 1 ))"; \
 		n=$$( docker run --detach --rm \
 			--env CONODE_SERVICE_PATH=/config \
 			--volume $(CURDIR)/$Dbackend/configs/conode-$$i:/config \
-            --user `id -u`:`id -g` \
-			--publish=$$ports:$$ports \
+			--user `id -u`:`id -g` \
 			--env DEBUG_COLOR=true \
-			--network=testnet \
+			$$network $$ports \
 			--name "conode-stainless-$$i" \
 			c4dt/$(service)-backend:latest -d 2 -c /config/private.toml server )
+		if [ -z "$$nodes" ]; then \
+			network="--network=container:$$n"
+			ports=""
+		fi
 		nodes="$$nodes $$n"
 	done \
 
@@ -103,7 +100,7 @@ $Dbackend/configs/conodes.toml: $(foreach i,$(serve_backend_node-ids),$Dbackend/
 $Dbackend/configs/conode-%/private.toml: private i = $(@D:$Dbackend/configs/conode-%=%)
 $Dbackend/configs/conode-%/private.toml: $Dbackend/build/conode
 	mkdir -p $(@D)
-	$< --config $@ setup --non-interactive --host $(TESTNET_NET).$$(( $i + 1 )) --port `$(call $Sbackend-port-srv,$i)` --description conode-$i
+	$< --config $@ setup --non-interactive --host localhost --port `$(call $Sbackend-port-srv,$i)` --description conode-$i
 $Dbackend/configs/conode-%/public.toml: $Dbackend/configs/conode-%/private.toml
 	grep -E '^\s*((Address|Suite|Public|Description) = .*|\[Services[^]]*\])$$' $^ > $@
 	echo "URL = \"http://localhost:$$(( $$(grep Address $@ | sed -e 's/.*:\(.*\)./\1/') + 1 ))\"\n$$( cat $@ )" > $@
