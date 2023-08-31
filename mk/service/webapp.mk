@@ -11,10 +11,10 @@ ifneq ($(wildcard $Dprotobuf),)
 # TODO for now, we can only generate for flat protobuf hierarchy
 $Dwebapp/src/lib/proto.js: private PATH := $(PATH):$Dwebapp/node_modules/protobufjs/bin
 $Dwebapp/src/lib/proto.js: $(foreach p,$($SPROTOS),$Dprotobuf/$p.proto) | $Dwebapp/node_modules
-	pbjs -t static-module -o $@ $^
+	npm i -g protobufjs@6 && pbjs -t static-module -o $@ $^
 $Dwebapp/src/lib/proto.d.ts: private PATH := $(PATH):$Dwebapp/node_modules/protobufjs/bin
 $Dwebapp/src/lib/proto.d.ts: $Dwebapp/src/lib/proto.js | $Dwebapp/node_modules
-	pbts -o $@ $<
+	npm i -g protobufjs@6 && pbts -o $@ $<
 
 .PHONY: $Swebapp-proto
 $Swebapp-proto: $Dwebapp/src/lib/proto.js $Dwebapp/src/lib/proto.d.ts
@@ -22,11 +22,11 @@ $Swebapp-build $Swebapp-test $Swebapp-serve: $Swebapp-proto
 endif
 
 ifneq ($(wildcard $Dbackend),)
-$Dwebapp/src/assets/configs/$(toml_filename): $Dbackend/build/conodes.toml
+$Dwebapp/src/assets/configs/$(toml_filename): $Dbackend/configs/conodes.toml
 	cp $^ $@
 $Dwebapp/src/assets/configs/:
 	mkdir $@
-$Dwebapp/src/assets/configs/byzcoin.toml: $Dbackend/build/ident | $Dwebapp/src/assets/configs/
+$Dwebapp/src/assets/configs/byzcoin.toml: $Dbackend/configs/ident | $Dwebapp/src/assets/configs/
 	awk '\
 		/^ByzCoinID:/	{printf("ByzCoinID = \"%s\"\n", $$2)} \
 		/^Admin DARC:/	{printf("AdminDarc = \"%s\"\n", $$3)} \

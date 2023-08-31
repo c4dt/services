@@ -35,6 +35,8 @@ endif
 
 $Dbackend/build:
 	mkdir $@
+$Dbackend/configs:
+	mkdir $@
 $Dbackend/cothority:
 	git clone https://github.com/dedis/cothority.git --depth 1 $@
 $Dbackend/build/conode.go: | $Dbackend/cothority $Dbackend/build
@@ -44,10 +46,10 @@ $Dbackend/build/main.go: | $Dbackend/build
 	echo import _ \"github.com/c4dt/$(service)/backend\"	>> $@
 $Dbackend/build/go.mod: | $Sbackend-proto $Dbackend/build/main.go $Dbackend/build
 	cd $Dbackend/build && go mod init github.com/dedis/cothority
-	echo 'replace github.com/c4dt/service-stainless/backend => ../../backend' >> $@
+	echo 'replace github.com/c4dt/service-stainless/backend => ../' >> $@
 	cd $Dbackend/build && go mod tidy
 $Dbackend/build/conode: $Dbackend/build/conode.go $Dbackend/build/main.go $Dbackend/build/go.mod $Dbackend/*.go
-	cd $(@D) && GO111MODULE=on go build -o ../build/$(@F)
+	cd $(@D) && GO111MODULE=on go build -o ./$(@F)
 
 $Sbackend-port-srv = expr 7770 + $1 '*' 2
 $Sbackend-port-ws = $(call $Sbackend-port-srv,$1) + 1
@@ -55,6 +57,7 @@ define $Swith-conodes-newline =
 
 
 endef
+
 define $Swith-conodes-sh =
 	nodes=''
 	network=''
@@ -65,12 +68,12 @@ define $Swith-conodes-sh =
 	do \
 		n=$$(docker run --detach --rm \
 			--env CONODE_SERVICE_PATH=/config \
-			--volume $(CURDIR)/$Dbackend/build/conode-$$i:/config \
+			--volume $(CURDIR)/$Dbackend/configs/conode-$$i:/config \
 			--user `id -u`:`id -g` \
 			$$ports $$network \
 			--env DEBUG_COLOR=true \
 			--name "conode-$$i" \
-			c4dt/$(service)-backend:latest -d 2 -c /config/private.toml server)
+			ghcr.io/c4dt/$(service)-backend:latest)
 		nodes="$$nodes $$n"
 		if [ -z "$$network" ]
 		then \
@@ -82,7 +85,7 @@ define $Swith-conodes-sh =
 	for i in $(serve_backend_node-ids)
 	do \
 		port_ws=`$(call $Sbackend-port-ws,$$i)`
-		while ! curl -s localhost:$$port_ws; do sleep 0.1; done
+		while ! curl -s localhost:$$port_ws > /dev/null; do sleep 0.1; done
 	done \
 
 	$1
@@ -92,26 +95,26 @@ $Swith-conodes = $(subst $($Swith-conodes-newline),;,$($Swith-conodes-sh))
 
 $Dbackend/build/bcadmin: | $Dbackend/cothority $Dbackend/build
 	cd $Dbackend/cothority/byzcoin/bcadmin && GO111MODULE=on go build -o ../../../build/$(@F)
-$Dbackend/build/conodes.toml: $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/public.toml)
+$Dbackend/configs/conodes.toml: $(foreach i,$(serve_backend_node-ids),$Dbackend/configs/conode-$i/public.toml)
 	for f in $^; do echo [[servers]]; sed -E 's,^[[:space:]]*\[(Services[^]]*)\]$$,[servers.\1],' $$f; done > $@
 
-$Dbackend/build/conode-%/private.toml: private i = $(@D:$Dbackend/build/conode-%=%)
-$Dbackend/build/conode-%/private.toml: $Dbackend/build/conode
+$Dbackend/configs/conode-%/private.toml: private i = $(@D:$Dbackend/configs/conode-%=%)
+$Dbackend/configs/conode-%/private.toml: $Dbackend/build/conode
 	mkdir -p $(@D)
 	$< --config $@ setup --non-interactive --host localhost --port `$(call $Sbackend-port-srv,$i)` --description conode-$i
-$Dbackend/build/conode-%/public.toml: $Dbackend/build/conode-%/private.toml
+$Dbackend/configs/conode-%/public.toml: $Dbackend/configs/conode-%/private.toml
 	grep -E '^\s*((Address|Suite|Public|Description) = .*|\[Services[^]]*\])$$' $^ > $@
-$Dbackend/build/ident: | $Sbackend-docker-build
-$Dbackend/build/ident: $Dbackend/build/bcadmin $Dbackend/build/conodes.toml $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/private.toml)
+$Dbackend/configs/ident: | $Sbackend-docker-build
+$Dbackend/configs/ident: $Dbackend/build/bcadmin $Dbackend/configs/conodes.toml $(foreach i,$(serve_backend_node-ids),$Dbackend/configs/conode-$i/private.toml)
 	$(call $Swith-conodes, \
-		$< -c $Dbackend/build create $(word 2,$^); \
-		( $< latest --bc $Dbackend/build/bc-*; $< key -print $Dbackend/build/key-* ) > $@)
+		$< -c $Dbackend/configs create $(word 2,$^); \
+		( $< latest --bc $Dbackend/configs/bc-*; $< key -print $Dbackend/configs/key-* ) > $@)
 
 $Dbackend/build/conode.Linux.x86_64: $Dbackend/build/conode.go $Dbackend/build/main.go $Dbackend/*.go | $Dbackend/build
-	cd $(@D) && GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o ../build/$(@F)
+	cd $(@D) && GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o ./$(@F)
 .PHONY: $Sbackend-docker-build
 $Sbackend-docker-build: $Dbackend/Dockerfile $Dbackend/build/conode.Linux.x86_64
-	 docker build --tag c4dt/$(service)-backend:latest --file $< $(<D)
+	 docker build --tag ghcr.io/c4dt/$(service)-backend:latest --file $< $(<D)
 
 .PHONY: $Sbackend-build $Sbackend-docker-build
 $Sbackend-build:
@@ -119,10 +122,10 @@ $Sbackend-build:
 
 .PHONY: $Sbackend-test
 $Sbackend-test:
-	cd $Dbackend && GO111MODULE=on go test ./...
+	cd $Dbackend 
 
-$Sbackend-serve: $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/private.toml) | $Sbackend-docker-build
+$Sbackend-serve: $(foreach i,$(serve_backend_node-ids),$Dbackend/configs/conode-$i/private.toml) | $Sbackend-docker-build
 	$(call $Swith-conodes,sleep 999d)
 
-$Sbackend-serve-test: $(foreach i,$(serve_backend_node-ids),$Dbackend/build/conode-$i/private.toml) | $Sbackend-docker-build
+$Sbackend-serve-test: $(foreach i,$(serve_backend_node-ids),$Dbackend/configs/conode-$i/private.toml) | $Sbackend-docker-build
 	$(call $Swith-conodes,echo "ready", NOTRAP)
